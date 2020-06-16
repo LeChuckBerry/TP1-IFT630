@@ -13,7 +13,6 @@ using std::chrono::milliseconds;
 using std::string;
 
 Semaphore coutSem(1);
-
 void print(const string &s) {
     coutSem.P();
     std::cout << s << std::endl;

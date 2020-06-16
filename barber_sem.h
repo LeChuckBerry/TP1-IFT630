@@ -1,0 +1,8 @@
+#ifndef TP1_IFT630_BARBER_SEM_H
+#define TP1_IFT630_BARBER_SEM_H
+
+
+
+
+
+#endif //TP1_IFT630_BARBER_SEM_H
