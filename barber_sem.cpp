@@ -21,6 +21,7 @@ Semaphore haircutDone(0);
 Semaphore customerQueue(0);
 Semaphore chair(0);
 Semaphore customerMutex(1);
+std::thread customers[25];
 
 
 class Barber{
@@ -29,24 +30,40 @@ class Barber{
     Semaphore& haircutDone;
     Semaphore& customerQueue;
     Semaphore& chair;
+    Semaphore& shopClosed;
+    Semaphore mutex = Semaphore(1);
+    bool shopOpen = true;
     std::thread thread;
 
 public:
-    Barber(Semaphore &readyToCut, Semaphore &haircutDone, Semaphore &customerQueue, Semaphore &chair):
-    readyToCut(readyToCut), haircutDone(haircutDone), customerQueue(customerQueue),
-                                        chair(chair), thread(&Barber::serveCustomers, this) {}
+    Barber(Semaphore &readyToCut, Semaphore &haircutDone, Semaphore &customerQueue, Semaphore &chair, Semaphore &shopClosed) :
+            readyToCut(readyToCut), haircutDone(haircutDone), customerQueue(customerQueue),
+            chair(chair), thread(&Barber::serveCustomers, this), shopClosed(shopClosed) {}
+
+    void closeShop(){
+        print("Shop is closing, serving last clients");
+        shopOpen = false;
+        if (customerCount == 0){
+            customerQueue.V();
+        }
+        shopClosed.P();
+        print("Shop closed");
+        thread.join();
+    }
 
 private:
 
     void serveCustomers(){
 
-        while(true){
+        while(shopOpen || customerCount > 0){
             // Wait for a customer to show up
-            if(customerCount == 0
-            ){
+            if(customerCount == 0)
                 print("Barber is asleep");
-            }
             customerQueue.P();
+
+            if (!shopOpen && customerCount == 0){
+                break;
+            }
 
             // Signal next customer
             print("Barber calls next customer");
@@ -61,11 +78,12 @@ private:
             print("Barber waiting for client to leave chair");
             chair.P();
         }
+        shopClosed.V();
     }
 
     void cutHair(){
         print("Barber is currently cutting hair");
-        std::this_thread::sleep_for(milliseconds(500));
+        std::this_thread::sleep_for(milliseconds(random<uint16_t>(800, 1300)));
         haircutDone.V();
     }
 
@@ -100,31 +118,31 @@ void customer(int clientID){
         print("Shop full ... Customer " + std::to_string(clientID) + " is going away" );
         customerMutex.V();
     }
-
 }
 
 
 int main(){
 
     int customerID = 0;
+    Semaphore shopClosed(0);
+    Barber barber = Barber(readyToCut, haircutDone, customerQueue, chair, shopClosed);
 
-    Barber barber(readyToCut, haircutDone, customerQueue, chair);
 
-    std::thread customers[25];
-    // Fill the waiting room
 
     for (int i = 0; i <= 25; i++){
-        if (i >= 5){
-            std::this_thread::sleep_for(milliseconds(random<uint16_t>(100, 2000)));
+        if (i >= 5 && i<= 20){
+            std::this_thread::sleep_for(milliseconds(random<uint16_t>(1000, 2000)));
         }
         customers[i] = std::thread(customer, customerID++);
     }
 
-
-    for(auto i = 0; i < 25; i++){
+    for (int i = 0; i <= 25; i++){
         customers[i].join();
     }
-    std::this_thread::sleep_for(milliseconds(200000));
+
+
+    barber.closeShop();
+
     return 0;
 }
 
