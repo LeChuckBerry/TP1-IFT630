@@ -4,21 +4,23 @@
 #include <thread>
 #include "semaphore.h"
 
-struct Chopstick{
-
+class Chopstick{
     private:
         Semaphore lock;
+        Semaphore doneUsing;
         const int id;
         int owner;
         bool dirty;
 
     public:
-        void pickUP(const int id);
+        void askOwnsership(const int id);
+        void giveUpOwnership();
         void release();
+        void take();
         Chopstick(int id, int owner);
 };
 
-    struct Philosopher{
+    class Philosopher{
     private :
         const std::string name;
         const int id;

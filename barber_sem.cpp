@@ -9,20 +9,24 @@ using namespace cppUtils;
 const int MAX_COSTUMER = 5;
 int customerCount;
 
-Semaphore coutSem(1);
-void print(const string &s) {
-    coutSem.P();
-    std::cout << s << std::endl;
-    coutSem.V();
-}
+
 
 Semaphore readyToCut(0);
 Semaphore haircutDone(0);
 Semaphore customerQueue(0);
 Semaphore chair(0);
 Semaphore customerMutex(1);
+Semaphore coutSem(1);
+Semaphore shopClosed(0);
+
+
 std::thread customers[25];
 
+void print(const string &s) {
+    coutSem.P();
+    std::cout << s << std::endl;
+    coutSem.V();
+}
 
 class Barber{
 
@@ -69,7 +73,7 @@ private:
             print("Barber calls next customer");
             readyToCut.V();
             // Waiting for next client to get on the chair
-            print("Barber waits for costumer to sit on the chair ");
+            print("Barber waits for costumer to sit on the chair");
             chair.P();
             // Executing haircut
             cutHair();
@@ -89,9 +93,6 @@ private:
 
 };
 
-
-
-
 void customer(int clientID){
     customerMutex.P();
     if(customerCount < MAX_COSTUMER ){
@@ -100,17 +101,17 @@ void customer(int clientID){
        customerMutex.V();
 
        // Waiting for the barber to be ready
-       print("Customer "  + std::to_string(clientID) + " is waiting for the barber to call");
+       print("Customer "  + std::to_string(clientID) + " entered the barber shop and ");
        readyToCut.P();
 
-       print("Customer " + std::to_string(clientID) + "is sitting in the barber chair");
+       print("Customer " + std::to_string(clientID) + " is sitting in the barber chair");
        chair.V();
 
        // Waiting for barber to finish haircut
        haircutDone.P();
        // Costumer
        customerCount --;
-       print("Customer " + std::to_string(clientID) + "is leaving to barber shop");
+       print("Customer " + std::to_string(clientID) + " is leaving to barber shop");
        chair.V();
     }
 
@@ -121,12 +122,12 @@ void customer(int clientID){
 }
 
 
+
+
 int main(){
 
     int customerID = 0;
-    Semaphore shopClosed(0);
     Barber barber = Barber(readyToCut, haircutDone, customerQueue, chair, shopClosed);
-
 
 
     for (int i = 0; i <= 25; i++){
@@ -139,7 +140,6 @@ int main(){
     for (int i = 0; i <= 25; i++){
         customers[i].join();
     }
-
 
     barber.closeShop();
 
