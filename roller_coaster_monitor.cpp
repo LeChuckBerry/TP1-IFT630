@@ -2,6 +2,8 @@
 #include"thread"
 #include <iostream>
 #include "utils.h"
+#include "monitor.h"
+
 using std::string;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -10,19 +12,19 @@ using namespace cppUtils;
 const int TOTAL_PASSENGERS = 5;
 int passengerCount = 0;
 
-Semaphore coutSem(1);
+Semaphore_Monitor coutSem;
 void print(const string &s) {
     coutSem.P();
     std::cout << s << std::endl;
     coutSem.V();
 }
 
-Semaphore emptySeats(0);
-Semaphore carEmpty(1);
-Semaphore carFull(0);
-Semaphore passengerMutex(1);
-Semaphore rideOver(0);
-Semaphore canGetOut(0);
+Semaphore_Monitor emptySeats;
+Semaphore_Monitor carEmpty;
+Semaphore_Monitor carFull;
+Semaphore_Monitor passengerMutex;
+Semaphore_Monitor rideOver;
+Semaphore_Monitor canGetOut;
 
 void leaveCar(int pNum){
     passengerMutex.P();
@@ -37,7 +39,7 @@ void leaveCar(int pNum){
 
 void passenger(int pNum){
     do {
-        print("Passenger " + std::to_string(pNum) + " is waiting in line");
+        print("Passenger" + std::to_string(pNum) + "is waiting in line");
         emptySeats.P();
         passengerMutex.P();
         print("Passenger " + std::to_string(pNum) + " is entering the ride");
