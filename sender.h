@@ -16,7 +16,7 @@ private:
 public:
 	sender(mailbox<Data>* box)
 	{
-		mblox = box;
+		mbox = box;
 	}
 	~sender() 
 	{

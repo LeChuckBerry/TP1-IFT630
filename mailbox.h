@@ -25,26 +25,18 @@ template<typename Data>
 class mailbox
 {
 private:
-	const int max_size;
+	int max_size;
 	std::queue<Data> que;
 	std::mutex mtx;
 	std::condition_variable cv;
 
-	receiver rec;
-	sender sen;
-
 public:
+
 	mailbox(int n)
 	{
 		max_size = n;
-		sen = sender(this);
-		rec = receiver(this);
 	}
-	~mailbox()
-	{
-		delete rec;
-		delete sen;
-	}
+	~mailbox(){}
 
 	// Essai de pousser un message
 	bool try_push(Data const& data)
@@ -62,7 +54,7 @@ public:
 				que.push(data);
 
 				// Deverouillage et signalement
-				lock.unlock();
+				mtx.unlock();
 				cv.notify_one();
 
 				return true;
