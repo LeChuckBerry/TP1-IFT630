@@ -34,7 +34,7 @@ void leaveCar(int pNum){
 
 void passenger(int pNum){
     do {
-        printer.printLine("Passenger" + std::to_string(pNum) + "is waiting in line");
+        printer.printLine("Passenger " + std::to_string(pNum) + " is waiting in line");
         emptySeats.P();
         passengerMutex.P();
         printer.printLine("Passenger " + std::to_string(pNum) + " is entering the ride");

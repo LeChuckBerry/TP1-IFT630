@@ -27,7 +27,7 @@ private :
     Chopstick& rightChop;
     std::thread thread;
     bool dining;
-    Semaphore done;
+    Semaphore_Monitor done;
 public:
     Philosopher(const std::string &name, int id, Chopstick &chopstick1, Chopstick &chopstick2);
     void dine();
