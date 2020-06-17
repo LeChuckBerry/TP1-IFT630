@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <limits>
 #include <random>
+#include "monitor.h"
 
 // Crédit Karim Elmougi-Côté
 namespace cppUtils {
@@ -31,6 +32,36 @@ namespace cppUtils {
     bool random<bool>() noexcept {
         return static_cast<bool>(random<uint16_t>(0, 1));
     }
+
+    class Printer_Sem{
+        Semaphore sem;
+
+
+        public:
+            Printer_Sem() : sem(Semaphore(1)){}
+            void printLine(std::string text){
+                sem.P();
+                std::cout << text << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                sem.V();
+            }
+    };
+
+    class Printer_Mon{
+        Semaphore_Monitor sem;
+
+
+    public:
+        Printer_Mon() : sem(Semaphore_Monitor()){}
+        void printLine(std::string text){
+            sem.P();
+            std::cout << text << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            sem.V();
+        }
+    };
+
+
 } // namespace cppUtils
 
 

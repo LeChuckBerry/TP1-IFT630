@@ -2,6 +2,8 @@
 #include"thread"
 #include <iostream>
 #include "utils.h"
+#include "monitor.h"
+
 using std::string;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -10,13 +12,14 @@ using namespace cppUtils;
 const int TOTAL_PASSENGERS = 5;
 int passengerCount = 0;
 
-Semaphore emptySeats(0);
-Semaphore carEmpty(1);
-Semaphore carFull(0);
-Semaphore passengerMutex(1);
-Semaphore rideOver(0);
-Semaphore canGetOut(0);
-Printer_Sem printer = Printer_Sem();
+
+Semaphore_Monitor emptySeats = Semaphore_Monitor();
+Semaphore_Monitor carEmpty = Semaphore_Monitor();
+Semaphore_Monitor carFull = Semaphore_Monitor();
+Semaphore_Monitor passengerMutex = Semaphore_Monitor();
+Semaphore_Monitor rideOver = Semaphore_Monitor();
+Semaphore_Monitor canGetOut = Semaphore_Monitor();
+Printer_Mon printer = Printer_Mon();
 
 void leaveCar(int pNum){
     passengerMutex.P();
@@ -68,7 +71,14 @@ void fillSeats(int numberOfSeats){
 
 }
 
+
+
 int main(){
+    // Les sémaphores devraient êtres à zéro au départ;
+    emptySeats.P();
+    carFull.P();
+    rideOver.P();
+    canGetOut.P();
 
     // Create passengers;
     auto totalClients = random<uint16_t>(TOTAL_PASSENGERS +1 , TOTAL_PASSENGERS*3);
@@ -77,6 +87,7 @@ int main(){
         clients[i] = std::thread(passenger, i);
     }
     std::thread roller_coaster = std::thread(rollerCoaster);
+
     while (true){
         carEmpty.P();
         printer.printLine("Car is now empty. Beginning passenger boarding");
