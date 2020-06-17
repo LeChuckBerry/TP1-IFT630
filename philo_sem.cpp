@@ -1,4 +1,4 @@
-#include "philosophers.h"
+#include "philo_sem.h"
 #include <iostream>
 #include <chrono>
 #include "utils.h"

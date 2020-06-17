@@ -6,44 +6,29 @@
 struct ConditionVar {
 
     Semaphore &sem_wait;
-    Semaphore &sem_next;
     Semaphore &mutex;
-    int &wait_count;
-    int &next_count;
+
 
     void wait() {
-        wait_count++;
-        if (next_count > 0)
-            sem_next.V();
-        else
-            mutex.V();
+        mutex.V();
         sem_wait.P();
-        wait_count--;
+        mutex.P();
     }
 
     void signal() {
-        if (wait_count > 0) {
-            next_count++;
-            sem_wait.V();
-            sem_next.P();
-            next_count--;
-        }
+        sem_wait.V();
     }
 
 public :
-    ConditionVar(Semaphore &mutex, Semaphore &semNext, Semaphore &semWait, int &nextCount, int &waitCount)
-            : mutex(mutex), sem_next(semNext), sem_wait(semWait), next_count(nextCount), wait_count(waitCount) {}
+    ConditionVar(Semaphore &mutex, Semaphore &semWait)
+            : mutex(mutex), sem_wait(semWait) {}
 };
 class Semaphore_Monitor{
 
-    Semaphore mutex;
-    Semaphore next;
-    Semaphore wait;
-    bool busy;
+    Semaphore mutex = Semaphore(1);
+    Semaphore wait = Semaphore(0);
+    bool busy = false;
     ConditionVar available;
-    int nextCount;
-    int waitCount;
-
 
     // Procedure to enter function
     void enter(){
@@ -51,10 +36,7 @@ class Semaphore_Monitor{
     }
     // Procedure to leave function
     void leave(){
-        if (nextCount > 0 )
-            next.V();
-        else
-            mutex.V();
+        mutex.V();
     }
 
 public:
@@ -74,7 +56,7 @@ public:
         leave();
     }
 
-    Semaphore_Monitor(): available(mutex, wait, next, nextCount, waitCount) {}
+    Semaphore_Monitor(): available(mutex, wait) {}
 
 };
 

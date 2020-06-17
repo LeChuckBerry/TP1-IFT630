@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-add_executable(philo_sem philosophers.cpp)
+add_executable(philo_sem philo_sem.cpp)
 add_executable(barber_sem barber_sem.cpp)
 add_executable(roller_coaster_sem roller_coaster_sem.cpp)
 add_executable(philo_monitor philo_monitor.cpp)

@@ -10,23 +10,17 @@ using namespace cppUtils;
 const int TOTAL_PASSENGERS = 5;
 int passengerCount = 0;
 
-Semaphore coutSem(1);
-void print(const string &s) {
-    coutSem.P();
-    std::cout << s << std::endl;
-    coutSem.V();
-}
-
 Semaphore emptySeats(0);
 Semaphore carEmpty(1);
 Semaphore carFull(0);
 Semaphore passengerMutex(1);
 Semaphore rideOver(0);
 Semaphore canGetOut(0);
+Printer_Sem printer = Printer_Sem();
 
 void leaveCar(int pNum){
     passengerMutex.P();
-    print("Passenger : " + std::to_string(pNum) + " is leaving car");
+    printer.printLine("Passenger : " + std::to_string(pNum) + " is leaving car");
     std::this_thread::sleep_for(milliseconds(random<uint16_t>(500, 1000)));
     passengerCount--;
     if(passengerCount == 0){
@@ -37,10 +31,10 @@ void leaveCar(int pNum){
 
 void passenger(int pNum){
     do {
-        print("Passenger " + std::to_string(pNum) + " is waiting in line");
+        printer.printLine("Passenger " + std::to_string(pNum) + " is waiting in line");
         emptySeats.P();
         passengerMutex.P();
-        print("Passenger " + std::to_string(pNum) + " is entering the ride");
+        printer.printLine("Passenger " + std::to_string(pNum) + " is entering the ride");
         std::this_thread::sleep_for(milliseconds(random<uint16_t>(500, 1000)));
         passengerCount++;
         if(passengerCount == TOTAL_PASSENGERS){
@@ -58,9 +52,9 @@ void passenger(int pNum){
 void rollerCoaster(){
     while (true) {
         carFull.P();
-        print("Car is full. Departure");
+        printer.printLine("Car is full. Departure");
         for (int i = 0; i < 5; i++) {
-            print("Lap n. " + std::to_string(i));
+            printer.printLine("Lap n. " + std::to_string(i));
             std::this_thread::sleep_for(seconds(1));
         }
         rideOver.V();
@@ -85,11 +79,11 @@ int main(){
     std::thread roller_coaster = std::thread(rollerCoaster);
     while (true){
         carEmpty.P();
-        print("Car is now empty. Beginning passenger boarding");
+        printer.printLine("Car is now empty. Beginning passenger boarding");
         fillSeats(TOTAL_PASSENGERS);
         //
         rideOver.P();
-        print("Ride is over. Passengers can now safely get out of the car");
+        printer.printLine("Ride is over. Passengers can now safely get out of the car");
         for (int i = 0; i <TOTAL_PASSENGERS; i++){
             canGetOut.V();
         }

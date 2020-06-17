@@ -1,5 +1,5 @@
-#ifndef TP1_IFT630_PHILOSOPHERS_H
-#define TP1_IFT630_PHILOSOPHERS_H
+#ifndef TP1_IFT630_PHILO_SEM_H
+#define TP1_IFT630_PHILO_SEM_H
 
 #include <thread>
 #include "semaphore.h"
@@ -37,4 +37,4 @@ class Chopstick{
         void leaveTable();
 };
 
-#endif //TP1_IFT630_PHILOSOPHERS_H
+#endif //TP1_IFT630_PHILO_SEM_H
