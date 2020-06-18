@@ -8,19 +8,24 @@ Test de l'impl�mentation d'un canal de communication de type mailbox
 #include "mailbox.h"
 #include "sender.h"
 #include "receiver.h"
-
+#include "utils.h"
 using namespace std::chrono_literals;
 
 size_t TOTAL_NB_ITEMS = 1000000;
-mailbox<int> items(1);
+mailbox<int> items(5);
 mailbox<int> done(1);
 sender<int> itemSender(&items);
 receiver<int> itemReceiver(&items);
 sender<int> doneSender(&done);
 receiver<int> doneReceiver(&done);
 
-// send() = V()
-// receive() = P()
+Semaphore coutSem = Semaphore(1);
+
+void print(std::string message){
+    coutSem.P();
+    std::cout << message << std::endl;
+    coutSem.V();
+}
 
 
 void consume()
@@ -29,8 +34,10 @@ void consume()
 	{
 		int n;
 		itemReceiver.receive(n);
-		std::cout << "consuming" << std::endl;
-	}
+        std::this_thread::sleep_for(2s);
+        print("consumed : " + std::to_string(n));
+
+    }
 	doneSender.send(1);
 }
 
@@ -38,10 +45,10 @@ void produce()
 {
 	for (size_t i = 0; i < TOTAL_NB_ITEMS; i++)
 	{
-		std::cout << "producing" << std::endl;
-		std::this_thread::sleep_for(2s);
-		itemSender.send(1);
-	}
+		itemSender.send(i);
+        print("produced : " + std::to_string(i));
+
+    }
 }
 
 int main()

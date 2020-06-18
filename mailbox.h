@@ -4,15 +4,11 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-
+#include "semaphore.h"
 /*
 #include "receiver.h"
 #include "sender.h"
 */
-
-// Implémentation d'un canal de IPC style boitre aux lettres
-// Grandement inspiré de l'article suivant:
-// https://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
 
 //Foward Declaration
 template<typename Data>
@@ -27,114 +23,43 @@ class mailbox
 private:
 	int max_size;
 	std::queue<Data> que;
-	std::mutex mtx;
-	std::condition_variable cv;
+	Semaphore pushMutex;
+	Semaphore popMutex;
+	Semaphore availableSpace;
+	Semaphore availableMessage;
 
 public:
 
-	mailbox(int n)
-	{
-		max_size = n;
-	}
+	mailbox(int n): max_size(n), pushMutex(Semaphore(1)), popMutex(Semaphore(1)),
+	                availableSpace(Semaphore(n - 1)), availableMessage(Semaphore(0)) {}
+
 	~mailbox(){}
 
-	// Essai de pousser un message
-	bool try_push(Data const& data)
-	{
-		// On essaye de vérouiller la file
-		if (mtx.try_lock())
-		{
-			// Si la file n'est pas pleine
-			if (que.size() < max_size)
-			{
-				// Verouillage de la file
-				//std::unique_lock<std::mutex> lock(mtx);
 
-				// Envoi du message
-				que.push(data);
-
-				// Deverouillage et signalement
-				mtx.unlock();
-				cv.notify_one();
-
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	void push(Data const& data)
+	void push(Data data)
 	{
 		// Verouille la file
-		std::unique_lock<std::mutex> lock(mtx);
+		pushMutex.P();
+        availableSpace.P();
+		// Mise en file du message
 
-		// Attendre qu'il y ait de la place dans la file
-		while (que.size() >= max_size)
-		{
-			cv.wait(lock);
-		}
-
-		// Envoi du message
 		que.push(data);
-
-		// Deverouillage et signalement
-		lock.unlock();
-		cv.notify_one();
-		
+		availableMessage.V();
+		pushMutex.V();
 	}
 
-	bool empty() const
-	{
-		std::unique_lock<std::mutex> lock(mtx);
-		return que.empty();
-	}
-
-	bool full() const
-	{
-		std::unique_lock<std::mutex> lock(mtx);
-		return que.size == max_size;
-	}
-
-	//Essai de retirer un message
-	bool try_pop(Data& popped_value)
-	{
-		// Verouille la file
-		std::unique_lock<std::mutex> lock(mtx);
-
-		// Verifie si la file est vide
-		if (que.empty())
-		{
-			return false;
-		}
-		else
-		{
-			popped_value = que.front();
-			que.pop();
-			return true;
-		}
-	}
-	
 	// Retirer un message 
 	void pop(Data& popped_value)
 	{
-		// Verouille la file
-		std::unique_lock<std::mutex> lock(mtx);
+		popMutex.P();
 
 		// Attendre qu'il y ait un message
-		while (que.empty())
-		{
-			cv.wait(lock);
-		}
+		availableMessage.P();
 		popped_value = que.front();
 		que.pop();
+        availableSpace.V();
+
+		popMutex.V();
 	}
 
 };
