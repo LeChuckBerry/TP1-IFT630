@@ -20,9 +20,11 @@ MailboxCommChannel<bool> passengerSync(1);
 MailboxCommChannel<bool> canGetOut(TOTAL_CLIENTS);
 MailboxCommChannel<string> printChannel(10);
 
-int main(){
-    std::cout << "Nom implemente" << std::endl;
-}
+
+Printer_Sem printer = Printer_Sem();
+
+int main() {}
+
 
 
 

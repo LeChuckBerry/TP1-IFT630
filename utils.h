@@ -7,6 +7,7 @@
 #include <random>
 #include "sync_primitives/monitor.h"
 #include <string>
+#include <iostream>
 
 // Crédit Karim Elmougi-Côté, modifié par Charles Coupal-Jetté pour portabilité
 
