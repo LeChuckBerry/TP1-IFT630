@@ -80,9 +80,11 @@ private :
     }
 
 public:
+    Mailbox() : max_size(5), queueMutex(Semaphore(1)),
+        availableSpace(Semaphore(5)), availableMessage(Semaphore(0)) {}
 
     Mailbox(int n): max_size(n),  queueMutex(Semaphore(1)),
-                    availableSpace(Semaphore(n - 1)), availableMessage(Semaphore(0)) {}
+                    availableSpace(Semaphore(n)), availableMessage(Semaphore(0)) {}
 
     ~Mailbox(){}
 
@@ -110,7 +112,7 @@ public:
 };
 
 template<typename Data>
-class MailboxCommChannel{
+class MailboxCommChannel {
 
     private :
         Mailbox<Data> mailbox;
@@ -120,17 +122,14 @@ class MailboxCommChannel{
 
     public:
 
-        MailboxCommChannel(int capacity){
-            mailbox = Mailbox<Data>(int);
-            sender = MessageSender<Data>(&mailbox);
-            receiver = MessageReceiver<Data>(&mailbox);
-        }
+        MailboxCommChannel(int capacity) : mailbox(Mailbox<Data>(capacity)),
+            sender(MessageSender(&mailbox)), receiver(MessageReceiver(&mailbox)) {}
 
-        MessageReceiver<Data>& getReceiver(){
+        MessageReceiver<Data> * getReceiver(){
             return &receiver;
         }
 
-        MessageSender<Data>& getSender(){
+        MessageSender<Data> * getSender(){
             return &sender;
         }
 
