@@ -83,6 +83,10 @@ public:
     Mailbox() : max_size(5), queueMutex(Semaphore(1)),
         availableSpace(Semaphore(5)), availableMessage(Semaphore(0)) {}
 
+	// Par d�faut, tampon de 5 
+	Mailbox() : max_size(5), queueMutex(Semaphore(1)),
+		availableSpace(Semaphore(5)), availableMessage(Semaphore(0)){}
+
     Mailbox(int n): max_size(n),  queueMutex(Semaphore(1)),
                     availableSpace(Semaphore(n)), availableMessage(Semaphore(0)) {}
 
