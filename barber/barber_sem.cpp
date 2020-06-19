@@ -1,12 +1,13 @@
-#include "semaphore.h"
+#include "../sync_primitives/semaphore.h"
 #include"thread"
 #include <iostream>
-#include "utils.h"
+#include "../utils.h"
 using std::string;
 using std::cout;
 using std::chrono::milliseconds;
 using namespace cppUtils;
-const int MAX_COSTUMER = 5;
+const int NB_OF_WAITING_CHAIRS = 5;
+const int TOTAL_NUM_CLIENTS = 30; 
 int customerCount;
 
 
@@ -20,7 +21,7 @@ Semaphore coutSem(1);
 Semaphore shopClosed(0);
 
 
-std::thread customers[25];
+std::thread customers[TOTAL_NUM_CLIENTS];
 
 void print(const string &s) {
     coutSem.P();
@@ -35,7 +36,6 @@ class Barber{
     Semaphore& customerQueue;
     Semaphore& chair;
     Semaphore& shopClosed;
-    Semaphore mutex = Semaphore(1);
     bool shopOpen = true;
     std::thread thread;
 
@@ -87,7 +87,7 @@ private:
 
     void cutHair(){
         print("Barber is currently cutting hair");
-        std::this_thread::sleep_for(milliseconds(random<uint16_t>(800, 1300)));
+        std::this_thread::sleep_for(milliseconds(random<uint16_t>(500, 3000)));
         haircutDone.V();
     }
 
@@ -95,13 +95,13 @@ private:
 
 void customer(int clientID){
     customerMutex.P();
-    if(customerCount < MAX_COSTUMER ){
+    if(customerCount < NB_OF_WAITING_CHAIRS ){
        customerCount++;
        customerQueue.V();
        customerMutex.V();
 
        // Waiting for the barber to be ready
-       print("Customer "  + std::to_string(clientID) + " entered the barber shop and ");
+       print("Customer "  + std::to_string(clientID) + " entered the barber shop and takes a chair in the waiting room");
        readyToCut.P();
 
        print("Customer " + std::to_string(clientID) + " is sitting in the barber chair");
@@ -129,18 +129,22 @@ int main(){
     int customerID = 0;
     Barber barber = Barber(readyToCut, haircutDone, customerQueue, chair, shopClosed);
 
+	// Simuler le barbier qui dors en attendant des clients 
+	std::this_thread::sleep_for(milliseconds(20));
 
-    for (int i = 0; i <= 25; i++){
-        if (i >= 5 && i<= 20){
+    for (int i = 0; i < TOTAL_NUM_CLIENTS; i++){
+        // Pour simuler un grand achalandage et des clients qui quittent à la fin 
+		if (i >= 5 && i<= TOTAL_NUM_CLIENTS - 8){
             std::this_thread::sleep_for(milliseconds(random<uint16_t>(1000, 2000)));
         }
         customers[i] = std::thread(customer, customerID++);
     }
 
-    for (int i = 0; i <= 25; i++){
+    for (int i = 0; i < TOTAL_NUM_CLIENTS; i++){
         customers[i].join();
     }
 
+	// Pour que le programme termine
     barber.closeShop();
 
     return 0;

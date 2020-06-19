@@ -2,7 +2,7 @@
 #define TP1_IFT630_PHILO_SEM_H
 
 #include <thread>
-#include "semaphore.h"
+#include "../sync_primitives/semaphore.h"
 
 class Chopstick{
     private:

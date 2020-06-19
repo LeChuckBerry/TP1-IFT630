@@ -1,7 +1,7 @@
 #ifndef TP1_IFT630_PHILO_MONITOR_H
 #define TP1_IFT630_PHILO_MONITOR_H
 #include "thread"
-#include "monitor.h"
+#include "../sync_primitives/monitor.h"
 
 class Chopstick{
 private:

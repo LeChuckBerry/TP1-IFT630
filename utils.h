@@ -5,19 +5,18 @@
 #include <cstdint>
 #include <limits>
 #include <random>
-#include "monitor.h"
+#include "sync_primitives/monitor.h"
+#include <string>
 
-// Crédit Karim Elmougi-Côté
+// Crédit Karim Elmougi-Côté, modifié par Charles Coupal-Jetté pour portabilité
+
 namespace cppUtils {
     template <typename T>
     T random(const T lower_bound, const T upper_bound) noexcept {
-        static_assert(std::is_arithmetic<T>::value);
+        static_assert(std::is_integral<T>::value);
         static_assert(!std::is_same<T, bool>::value);
         auto dist = [lower_bound, upper_bound]() {
-            if constexpr (std::is_floating_point<T>::value)
-                return std::uniform_real_distribution<T>{lower_bound, upper_bound};
-            else
-                return std::uniform_int_distribution<T>{lower_bound, upper_bound};
+            return std::uniform_int_distribution<T>{lower_bound, upper_bound};
         }();
         static std::random_device r{};
         auto engine = std::default_random_engine{r()};
@@ -53,6 +52,7 @@ namespace cppUtils {
 
     public:
         Printer_Mon() : sem(Semaphore_Monitor()){}
+
         void printLine(std::string text){
             sem.P();
             std::cout << text << std::endl;

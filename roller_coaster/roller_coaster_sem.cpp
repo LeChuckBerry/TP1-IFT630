@@ -1,13 +1,15 @@
-#include "semaphore.h"
+#include "../sync_primitives/semaphore.h"
 #include"thread"
 #include <iostream>
-#include "utils.h"
+#include "../utils.h"
 using std::string;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
 using namespace cppUtils;
 
 const int TOTAL_PASSENGERS = 5;
+const int TOTAL_CLIENTS = 20; 
+
 int passengerCount = 0;
 
 Semaphore emptySeats(0);
@@ -71,9 +73,8 @@ void fillSeats(int numberOfSeats){
 int main(){
 
     // Create passengers;
-    auto totalClients = random<uint16_t>(TOTAL_PASSENGERS +1 , TOTAL_PASSENGERS*3);
-    std::thread clients[totalClients];
-    for (int i = 0; i < totalClients; i++){
+    std::thread clients[TOTAL_CLIENTS];
+    for (int i = 0; i < TOTAL_CLIENTS; i++){
         clients[i] = std::thread(passenger, i);
     }
     std::thread roller_coaster = std::thread(rollerCoaster);
