@@ -1,8 +1,8 @@
 #include "philo_sem.h"
 #include <iostream>
 #include <chrono>
-#include "utils.h"
-#include "monitor.h"
+#include "../utils.h"
+#include "../sync_primitives/monitor.h"
 #include <thread>
 
 // Implémentation de la solution de Chandy/Misra avec des sémaphores
