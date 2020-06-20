@@ -23,4 +23,3 @@ target_link_libraries(philo_monitor Threads::Threads)
 target_link_libraries(roller_coaster_monitor Threads::Threads)
 target_link_libraries(roller_coaster_messages Threads::Threads)
 target_link_libraries(mailboxDemo Threads::Threads)
-
